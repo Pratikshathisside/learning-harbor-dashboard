@@ -1,12 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Clock, Info, CheckCircle } from "lucide-react";
+import { Clock, Info, CheckCircle, Upload } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { Button } from "@/components/ui/button";
 
 const StudentDashboard = () => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [extractedText, setExtractedText] = useState<string | null>(null);
+
   const assignments = [
     { 
       id: 1, 
@@ -78,6 +84,33 @@ const StudentDashboard = () => {
     { month: 'May', score: 89 }
   ];
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files[0];
+    setFile(droppedFile);
+  };
+
+  const handleStartProcessing = () => {
+    if (!file) return;
+    setIsProcessing(true);
+    // Simulate OCR processing
+    setTimeout(() => {
+      setExtractedText("Sample extracted text from the document. This would be replaced with actual OCR results.");
+      setIsProcessing(false);
+    }, 2000);
+  };
+
   return (
     <div className="space-y-8 fade-in">
       <header className="mb-8">
@@ -100,6 +133,48 @@ const StudentDashboard = () => {
               </Tooltip>
             </TooltipProvider>
           </div>
+
+          <Card className="p-6">
+            <div
+              className={`border-2 border-dashed rounded-lg p-8 text-center ${
+                isDragging ? 'border-primary bg-primary/5' : 'border-muted'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">
+                {file ? file.name : 'Drop your assignment here'}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'PDF, DOC up to 10MB'}
+              </p>
+              <input
+                type="file"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                accept=".pdf,.doc,.docx"
+                id="file-upload"
+              />
+              <label htmlFor="file-upload">
+                <Button variant="outline" className="mx-auto">
+                  Browse Files
+                </Button>
+              </label>
+            </div>
+            {file && (
+              <div className="mt-4">
+                <Button 
+                  className="w-full" 
+                  onClick={handleStartProcessing}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Processing...' : 'Start AI Analysis'}
+                </Button>
+              </div>
+            )}
+          </Card>
 
           {assignments.map((assignment) => (
             <Card key={assignment.id} className="p-6 card-hover">
@@ -142,6 +217,15 @@ const StudentDashboard = () => {
         </section>
 
         <section className="space-y-6">
+          {extractedText && (
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold mb-4">Extracted Text</h2>
+              <div className="bg-secondary p-4 rounded-lg">
+                <p className="text-sm whitespace-pre-wrap">{extractedText}</p>
+              </div>
+            </Card>
+          )}
+
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Performance Trend</h3>
             <div className="h-64">
