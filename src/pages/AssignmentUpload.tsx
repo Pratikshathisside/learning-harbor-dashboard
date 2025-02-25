@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Upload, Clock, CheckCircle } from "lucide-react";
 const AssignmentUpload = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [extractedText, setExtractedText] = useState<string | null>(null);
 
   const assignmentHistory = [
     { 
@@ -14,14 +15,18 @@ const AssignmentUpload = () => {
       name: 'Mathematics Assignment 1',
       submittedDate: '2024-02-20',
       status: 'completed',
-      score: 85
+      score: 85,
+      answerKey: 'View Answer Key',
+      feedback: 'Good work on calculus problems'
     },
     { 
       id: 2, 
       name: 'Physics Lab Report',
       submittedDate: '2024-02-15',
       status: 'completed',
-      score: 92
+      score: 92,
+      answerKey: 'View Answer Key',
+      feedback: 'Excellent experimental analysis'
     }
   ];
 
@@ -30,13 +35,15 @@ const AssignmentUpload = () => {
       id: 1,
       name: 'Chemistry Assignment 2',
       deadline: '2024-03-10',
-      subject: 'Chemistry'
+      subject: 'Chemistry',
+      requirements: 'Include lab results and analysis'
     },
     {
       id: 2,
       name: 'Physics Assignment 3',
       deadline: '2024-03-15',
-      subject: 'Physics'
+      subject: 'Physics',
+      requirements: 'Show all calculations'
     }
   ];
 
@@ -55,6 +62,16 @@ const AssignmentUpload = () => {
     setIsDragging(false);
     const droppedFile = e.dataTransfer.files[0];
     setFile(droppedFile);
+  };
+
+  const handleStartProcessing = () => {
+    if (!file) return;
+    setIsProcessing(true);
+    // Simulate OCR processing
+    setTimeout(() => {
+      setExtractedText("Sample extracted text from the document. This would be replaced with actual OCR results.");
+      setIsProcessing(false);
+    }, 2000);
   };
 
   return (
@@ -95,21 +112,37 @@ const AssignmentUpload = () => {
                 </Button>
               </label>
             </div>
+            {file && (
+              <div className="mt-4">
+                <Button 
+                  className="w-full" 
+                  onClick={handleStartProcessing}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Processing...' : 'Start AI Analysis'}
+                </Button>
+              </div>
+            )}
           </Card>
 
           <Card className="p-6">
             <h2 className="text-lg font-semibold mb-4">Upcoming Deadlines</h2>
             <div className="space-y-4">
               {upcomingDeadlines.map((deadline) => (
-                <div key={deadline.id} className="flex items-center justify-between p-4 bg-secondary rounded-lg">
-                  <div>
-                    <p className="font-medium">{deadline.name}</p>
-                    <p className="text-sm text-muted-foreground">{deadline.subject}</p>
+                <div key={deadline.id} className="p-4 bg-secondary rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-medium">{deadline.name}</p>
+                      <p className="text-sm text-muted-foreground">{deadline.subject}</p>
+                    </div>
+                    <div className="flex items-center text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span>{new Date(deadline.deadline).toLocaleDateString()}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center text-muted-foreground">
-                    <Clock className="h-4 w-4 mr-2" />
-                    <span>{new Date(deadline.deadline).toLocaleDateString()}</span>
-                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Requirements: {deadline.requirements}
+                  </p>
                 </div>
               ))}
             </div>
@@ -117,8 +150,17 @@ const AssignmentUpload = () => {
         </div>
 
         <div className="space-y-6">
+          {extractedText && (
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold mb-4">Extracted Text</h2>
+              <div className="bg-secondary p-4 rounded-lg">
+                <p className="text-sm whitespace-pre-wrap">{extractedText}</p>
+              </div>
+            </Card>
+          )}
+
           <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Assignment History</h2>
+            <h2 className="text-lg font-semibold mb-4">Submission History</h2>
             <div className="space-y-4">
               {assignmentHistory.map((assignment) => (
                 <div key={assignment.id} className="p-4 bg-secondary rounded-lg">
@@ -134,29 +176,16 @@ const AssignmentUpload = () => {
                       {assignment.score}%
                     </span>
                   </div>
+                  <div className="mt-2 space-y-2">
+                    <p className="text-sm text-muted-foreground">{assignment.feedback}</p>
+                    <Button variant="outline" size="sm" className="w-full">
+                      {assignment.answerKey}
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           </Card>
-
-          {file && (
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">File Preview</h2>
-              <div className="space-y-4">
-                <div className="p-4 bg-secondary rounded-lg">
-                  <h3 className="font-medium mb-2">File Information</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Name: {file.name}<br />
-                    Size: {(file.size / 1024 / 1024).toFixed(2)} MB<br />
-                    Type: {file.type}
-                  </p>
-                </div>
-                <Button className="w-full">
-                  Start AI Analysis
-                </Button>
-              </div>
-            </Card>
-          )}
         </div>
       </div>
     </div>
