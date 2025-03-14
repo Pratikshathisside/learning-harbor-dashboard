@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { BookOpen, Users, Upload } from "lucide-react";
+import { BookOpen, Users } from "lucide-react";
 
 const Navigation = () => {
   const location = useLocation();
@@ -10,7 +10,6 @@ const Navigation = () => {
   const navItems = [
     { name: 'Student Dashboard', path: '/student', icon: BookOpen },
     { name: 'Teacher Dashboard', path: '/teacher', icon: Users },
-    { name: 'Assignment Upload', path: '/upload', icon: Upload },
   ];
 
   return (
